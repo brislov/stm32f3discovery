@@ -95,7 +95,7 @@ int main(void)
   // Check connection to gyroscope
   if (GyroGetId() != 0b11010100)
   {
-  	return 1;
+    return 1;
   }
 
   /* USER CODE END 2 */
