@@ -23,8 +23,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gyro.h"
-
-#include <assert.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,20 +91,25 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Check connection to gyroscope
-  if (GyroGetId() != 0b11010100)
+  if (Gyro_GetId() != 0b11010100)
   {
-    return 1;
+    Error_Handler();
   }
+
+  Gyro_Init();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t temp;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    temp = Gyro_GetTemp();
+    HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
