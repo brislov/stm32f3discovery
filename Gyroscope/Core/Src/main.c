@@ -102,12 +102,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t temp;
+  int16_t x;
+  int8_t temp;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    x = Gyro_GetAngularDataX();
     temp = Gyro_GetTemp();
     HAL_Delay(1000);
   }

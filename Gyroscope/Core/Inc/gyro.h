@@ -7,5 +7,6 @@
 
 void Gyro_Init();
 
+int16_t Gyro_GetAngularDataX();
 uint8_t Gyro_GetId();
 uint8_t Gyro_GetTemp();
