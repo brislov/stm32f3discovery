@@ -109,7 +109,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    x = Gyro_GetAngularDataX();
+    x = Gyro_GetAngularData();
     temp = Gyro_GetTemp();
     HAL_Delay(1000);
   }
