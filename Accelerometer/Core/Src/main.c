@@ -56,6 +56,20 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+const uint8_t slaveAddressWrite = 0x32;
+const uint8_t slaveAddressRead = 0x33;
+
+void SendData(uint8_t* writeRegister, uint8_t* sendData)
+{
+  uint8_t pData[2] = { *writeRegister, *sendData };
+  HAL_I2C_Master_Transmit(&hi2c1, slaveAddressWrite, (uint8_t*)&pData, 2, 100);
+}
+
+void ReceiveData(uint8_t* readRegister, uint8_t* receiveData)
+{
+  HAL_I2C_Master_Transmit(&hi2c1, slaveAddressWrite, readRegister, 1, 100);
+  HAL_I2C_Master_Receive(&hi2c1, slaveAddressRead, receiveData, 1, 100);
+}
 
 /* USER CODE END 0 */
 
@@ -90,71 +104,36 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  /*
-   * START (ST)
-   * ????? (SAD +W)
-   * (SAK)
-   * (SUB)
-   * (SAK)
-   * DATA
-   * (SAK)
-   * (SP)
-   *
-   */
+  HAL_Delay(100);
 
-  const uint8_t SAD_R = 0x3D; // slave address + read
-  const uint8_t SAD_W = 0x3C; // slave address + write
+  uint8_t whoamiaddress = 0x0f;
+  uint8_t receiveData = 0;
 
-  const uint8_t CTRL_REG1_A = 0x20;
-  const uint8_t OUT_X_L_A = 0x28;
+  ReceiveData(&whoamiaddress, &receiveData);
 
-  // Turn on sensors
-  uint8_t transmitData[2] = { CTRL_REG1_A, 0b01010111 };
-  HAL_I2C_Master_Transmit(&hi2c1, SAD_W, (uint8_t*) transmitData, sizeof(uint8_t)*2, 100);
+  if (receiveData != 0b00110011)
+  {
+    Error_Handler();
+  }
 
-
-
+  // Turn on the shit
+  uint8_t CTRL_REG1_A = 0x20;
+  uint8_t writeData = 0b10010111; // 1001 0111 => 0x97
+  SendData(&CTRL_REG1_A, &writeData);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t buffer[2] = { OUT_X_L_A, 0 };
+  uint8_t OUT_X_L_A = 0x28;
+  uint8_t xValue = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-    /*
-     *     LD3
-     *  LD4   LD5
-     * LD6     LD7
-     *  LD8   LD9
-     *     LD10
-     */
-
-    // Get sensor data
-
-    HAL_I2C_Master_Transmit(&hi2c1, SAD_R, buffer, sizeof(buffer)*2, 100);
-    HAL_Delay(300);
-
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD7_GPIO_Port, LD7_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD9_GPIO_Port, LD9_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD10_GPIO_Port, LD10_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD8_GPIO_Port, LD8_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);
-    //HAL_Delay(1000);
-    //HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+    ReceiveData(&OUT_X_L_A, &xValue);
+    HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
