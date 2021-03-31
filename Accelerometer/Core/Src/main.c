@@ -87,21 +87,37 @@ void Accelerometer_ReadMultipleBytes(uint8_t* readRegister, uint8_t* receiveData
 int16_t GetX()
 {
   const uint8_t OUT_X_L_A = 0x28;
-  //const uint8_t OUT_X_H_A = 0x29;
+  const uint8_t SUB_INCR = 0x80 | OUT_X_L_A;  // auto increment sub-address (SUB) when MSB is set to '1'
 
-  // Auto increment sub-address (SUB) if the most significant bit is set to '1'
-  const uint8_t INCREMENT_SUB = 0x80 | OUT_X_L_A;
+  uint8_t data[2];
 
-  uint16_t receiveData = 0;
+  Accelerometer_ReadMultipleBytes((uint8_t*)&SUB_INCR, (uint8_t*)&data, 2);
 
-  Accelerometer_ReadMultipleBytes((uint8_t*)&INCREMENT_SUB, (uint8_t*)&receiveData, 2);
-
-  return (int16_t)receiveData;
+  return (data[1] << 8) | data[0];
 }
 
 int16_t GetY()
 {
+  const uint8_t OUT_Y_L_A = 0x2A;
+  const uint8_t SUB_INCR = 0x80 | OUT_Y_L_A;  // auto increment sub-address (SUB) when MSB is set to '1'
 
+  uint8_t data[2];
+
+  Accelerometer_ReadMultipleBytes((uint8_t*)&SUB_INCR, (uint8_t*)&data, 2);
+
+  return (data[1] << 8) | data[0];
+}
+
+int16_t GetZ()
+{
+  const uint8_t OUT_Z_L_A = 0x2C;
+  const uint8_t SUB_INCR = 0x80 | OUT_Z_L_A;  // auto increment sub-address (SUB) when MSB is set to '1'
+
+  uint8_t data[2];
+
+  Accelerometer_ReadMultipleBytes((uint8_t*)&SUB_INCR, (uint8_t*)&data, 2);
+
+  return (data[1] << 8) | data[0];
 }
 
 /* USER CODE END 0 */
@@ -158,27 +174,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  uint8_t OUT_X_L_A = 0x28;
-  uint8_t OUT_X_H_A = 0x29;
-
-  uint16_t xValue = 0;
-  uint8_t xLow = 0;
-  uint8_t xHigh = 0;
-
-  int16_t xValue2 = 0;
+  int16_t accelerationAlongX;
+  int16_t accelerationAlongY;
+  int16_t accelerationAlongZ;
 
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    ReceiveData(&OUT_X_L_A, &xLow);
-    ReceiveData(&OUT_X_H_A, &xHigh);
-
-    xValue = (xHigh << 8) | xLow;
-
-    xValue2 = GetX();
+    accelerationAlongX = GetX();
+    accelerationAlongY = GetY();
+    accelerationAlongZ = GetZ();
 
     HAL_Delay(100);
   }
