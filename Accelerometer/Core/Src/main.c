@@ -56,6 +56,8 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// Slave address for acceleration sensor
 const uint8_t slaveAddressWrite = 0x32;
 const uint8_t slaveAddressRead = 0x33;
 
@@ -69,6 +71,37 @@ void ReceiveData(uint8_t* readRegister, uint8_t* receiveData)
 {
   HAL_I2C_Master_Transmit(&hi2c1, slaveAddressWrite, readRegister, 1, 100);
   HAL_I2C_Master_Receive(&hi2c1, slaveAddressRead, receiveData, 1, 100);
+}
+
+const uint8_t SAD_W = 0x32; // Slave Address + Write
+const uint8_t SAD_R = 0x33; // Slave Address + Read
+
+const uint32_t TIMEOUT = 10; // ms
+
+void Accelerometer_ReadMultipleBytes(uint8_t* readRegister, uint8_t* receiveData, uint16_t size)
+{
+  HAL_I2C_Master_Transmit(&hi2c1, SAD_R, readRegister, 1, TIMEOUT);
+  HAL_I2C_Master_Receive(&hi2c1, SAD_R, receiveData, size, TIMEOUT);
+}
+
+int16_t GetX()
+{
+  const uint8_t OUT_X_L_A = 0x28;
+  //const uint8_t OUT_X_H_A = 0x29;
+
+  // Auto increment sub-address (SUB) if the most significant bit is set to '1'
+  const uint8_t INCREMENT_SUB = 0x80 | OUT_X_L_A;
+
+  uint16_t receiveData = 0;
+
+  Accelerometer_ReadMultipleBytes((uint8_t*)&INCREMENT_SUB, (uint8_t*)&receiveData, 2);
+
+  return (int16_t)receiveData;
+}
+
+int16_t GetY()
+{
+
 }
 
 /* USER CODE END 0 */
@@ -125,14 +158,28 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   uint8_t OUT_X_L_A = 0x28;
-  uint8_t xValue = 0;
+  uint8_t OUT_X_H_A = 0x29;
+
+  uint16_t xValue = 0;
+  uint8_t xLow = 0;
+  uint8_t xHigh = 0;
+
+  int16_t xValue2 = 0;
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    ReceiveData(&OUT_X_L_A, &xValue);
+    ReceiveData(&OUT_X_L_A, &xLow);
+    ReceiveData(&OUT_X_H_A, &xHigh);
+
+    xValue = (xHigh << 8) | xLow;
+
+    xValue2 = GetX();
+
     HAL_Delay(100);
   }
   /* USER CODE END 3 */
